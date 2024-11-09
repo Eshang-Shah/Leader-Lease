@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package raft;
+
+// The Raft service definition.
+service RaftService {
+  // Sends a vote request to other nodes
+  rpc RequestVote(VoteRequest) returns (VoteReply) {}
+  // Appends entries to the log
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesReply) {}
+  // Client interaction with the leader for get/set requests
+  rpc ServeClient(ServeClientRequest) returns (ServeClientReply) {}
+}
+
+// The request message containing information for voting.
+message VoteRequest {
+  int32 term = 1;
+  int32 candidateId = 2;
+  int32 lastLogIndex = 3;
+  int32 lastLogTerm = 4;
+}
+
+// The reply message containing the vote result.
+message VoteReply {
+  int32 term = 1;
+  bool voteGranted = 2;
+  float leaseRem = 3;
+}
+
+// The request message for appending entries.
+message AppendEntriesRequest {
+  int32 term = 1;
+  int32 leaderId = 2;
+  int32 prevLogIndex = 3;
+  int32 prevLogTerm = 4;
+  repeated LogEntry entries = 5;
+  int32 leaderCommit = 6;
+  float leaseDuration = 7; // Leader lease duration
+}
+
+// The reply message for append entries result.
+message AppendEntriesReply {
+  int32 term = 1;
+  bool success = 2;
+  int32 ack = 3;
+}
+
+// Example log entry message (simplified).
+message LogEntry {
+  int32 term = 1;
+  string command = 2;
+}
+
+// The request message for client interactions.
+message ServeClientRequest {
+  string request = 1; // e.g., "SET key value" or "GET key"
+}
+
+// The reply message for client requests.
+message ServeClientReply {
+  string response = 1; // e.g., value or operation result
+  string leaderId = 2;
+  bool success = 3;
+}
